@@ -19,7 +19,13 @@ const OrderSchema = new mongoose.Schema({
   total_amount: { type: Number, required: true },
   discount_amount: { type: Number, default: 0 },
   coupon_code: { type: String },
-  status: { type: String, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'pending' }
+  tracking_number: { type: String },
+  estimated_delivery: { type: String },
+  status: { type: String, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'processing' }
 }, { timestamps: true });
 
-export default mongoose.models.Order || mongoose.model('Order', OrderSchema);
+if (mongoose.models && mongoose.models.Order) {
+  delete mongoose.models.Order;
+}
+
+export default mongoose.model('Order', OrderSchema);

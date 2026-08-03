@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import connectDB from './db/connect.js';
 import Product from './models/Product.js';
 import AdminUser from './models/AdminUser.js';
+import User from './models/User.js';
 import Order from './models/Order.js';
 import Coupon from './models/Coupon.js';
 import SupportInfo from './models/SupportInfo.js';
@@ -24,6 +25,7 @@ app.use(express.json());
 
 // In-Memory Fallback Data Store (for seamless out-of-box operation)
 const memoryStore = {
+  users: [],
   products: [
     {
       _id: 'prod-1',
@@ -110,6 +112,9 @@ async function initDBConnection() {
 
 // ---------------- API ROUTES ---------------- //
 
+// In-memory dynamic password for fallback store
+let dynamicAdminPassword = 'admin123';
+
 // Healthcheck / Status
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'AnimeVerse Full-Stack API', dbConnected });
@@ -119,11 +124,12 @@ app.get('/api/health', (req, res) => {
 app.post('/api/admin/login', async (req, res) => {
   try {
     const { email, password, phone } = req.body;
+    const cleanEmail = (email || '').trim().toLowerCase();
     
     if (dbConnected) {
       try {
-        const admin = await AdminUser.findOne({ email });
-        if (admin && await bcrypt.compare(password, admin.password)) {
+        const admin = await AdminUser.findOne({ email: cleanEmail });
+        if (admin && password && await bcrypt.compare(password, admin.password)) {
           const token = jwt.sign({ id: admin._id, email: admin.email }, JWT_SECRET, { expiresIn: '7d' });
           return res.json({ token, user: { email: admin.email } });
         }
@@ -132,16 +138,307 @@ app.post('/api/admin/login', async (req, res) => {
       }
     }
 
-    // Default admin validation for demo/seeding
-    if (
-      (email === 'admin@animeverse.com' && (password === 'admin123' || !password || password === '9685982012')) ||
-      (phone === '9685982012' || email === 'admin@animeverse.com')
-    ) {
+    // Default & Dynamic admin validation fallback
+    const isDefaultEmail = cleanEmail === 'admin@animeverse.com' || cleanEmail === 'admin';
+    const isDefaultPhone = phone === '9685982012';
+    const isPasswordValid = password === dynamicAdminPassword || password === 'admin123' || (isDefaultPhone && !password);
+
+    if ((isDefaultEmail || isDefaultPhone) && isPasswordValid) {
       const token = jwt.sign({ id: 'admin-default-id', email: 'admin@animeverse.com' }, JWT_SECRET, { expiresIn: '7d' });
       return res.json({ token, user: { email: 'admin@animeverse.com' } });
     }
 
-    return res.status(401).json({ error: 'Invalid admin credentials.' });
+    return res.status(401).json({ error: 'Invalid Admin Credentials or Password.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin Forgot Password (Verification)
+app.post('/api/admin/forgot-password', async (req, res) => {
+  try {
+    const { email, phone } = req.body;
+    const cleanEmail = (email || '').trim().toLowerCase();
+
+    if (!cleanEmail && !phone) {
+      return res.status(400).json({ error: 'Admin Email or Phone number is required.' });
+    }
+
+    let isAdminFound = false;
+
+    if (dbConnected) {
+      try {
+        const admin = await AdminUser.findOne({ email: cleanEmail });
+        if (admin) isAdminFound = true;
+      } catch (e) {
+        dbConnected = false;
+      }
+    }
+
+    if (cleanEmail === 'admin@animeverse.com' || cleanEmail === 'admin' || phone === '9685982012') {
+      isAdminFound = true;
+    }
+
+    if (!isAdminFound) {
+      return res.status(404).json({ error: 'Admin account not found with the provided credentials.' });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Admin account verified. You can now reset your password.',
+      email: 'admin@animeverse.com'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin Reset Password
+app.post('/api/admin/reset-password', async (req, res) => {
+  try {
+    const { email, secretKey, newPassword } = req.body;
+    const cleanEmail = (email || '').trim().toLowerCase();
+
+    if (!newPassword || newPassword.length < 4) {
+      return res.status(400).json({ error: 'New password must be at least 4 characters.' });
+    }
+
+    // Verify admin secret identity (email or security phone)
+    const isAuthorized = cleanEmail === 'admin@animeverse.com' || cleanEmail === 'admin' || secretKey === '9685982012';
+
+    if (!isAuthorized) {
+      return res.status(403).json({ error: 'Invalid secret key or unauthorized reset request.' });
+    }
+
+    // Update in-memory password fallback
+    dynamicAdminPassword = newPassword;
+
+    // Update MongoDB AdminUser if DB is connected
+    if (dbConnected) {
+      try {
+        const hashedPw = await bcrypt.hash(newPassword, 10);
+        await AdminUser.findOneAndUpdate(
+          { email: 'admin@animeverse.com' },
+          { password: hashedPw },
+          { upsert: true, new: true }
+        );
+      } catch (e) {
+        console.warn('Could not update Mongo AdminUser:', e.message);
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: 'Admin password updated successfully! Please login with your new password.'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// User Registration (/api/auth/register)
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required.' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Check if user already exists
+    if (dbConnected) {
+      try {
+        const existing = await User.findOne({ email: normalizedEmail });
+        if (existing) {
+          return res.status(400).json({ error: 'An account with this email already exists.' });
+        }
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+        const user = await User.create({
+          name: name.trim(),
+          email: normalizedEmail,
+          password: hashedPassword,
+          picture: avatar,
+          provider: 'email'
+        });
+        const token = jwt.sign({ id: user._id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '30d' });
+        return res.status(201).json({
+          token,
+          user: {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            picture: user.picture,
+            provider: 'email'
+          }
+        });
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+
+    // In-Memory fallback store logic
+    const existingMemoryUser = memoryStore.users.find(u => u.email.toLowerCase() === normalizedEmail);
+    if (existingMemoryUser) {
+      return res.status(400).json({ error: 'An account with this email already exists.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = 'usr-' + Date.now();
+    const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
+    const newMemoryUser = {
+      id: userId,
+      _id: userId,
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      picture: avatar,
+      provider: 'email'
+    };
+    memoryStore.users.push(newMemoryUser);
+
+    const token = jwt.sign({ id: userId, email: normalizedEmail, name: name.trim() }, JWT_SECRET, { expiresIn: '30d' });
+    return res.status(201).json({
+      token,
+      user: {
+        id: userId,
+        name: name.trim(),
+        email: normalizedEmail,
+        picture: avatar,
+        provider: 'email'
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// User Login (/api/auth/login)
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (dbConnected) {
+      try {
+        const user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+          return res.status(401).json({ error: 'Invalid email or password.' });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+          return res.status(401).json({ error: 'Invalid email or password.' });
+        }
+        const token = jwt.sign({ id: user._id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '30d' });
+        return res.json({
+          token,
+          user: {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            picture: user.picture,
+            provider: user.provider || 'email'
+          }
+        });
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+
+    // In-Memory fallback logic
+    const memUser = memoryStore.users.find(u => u.email.toLowerCase() === normalizedEmail);
+    if (!memUser) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+    const isMatch = await bcrypt.compare(password, memUser.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+    const token = jwt.sign({ id: memUser.id, email: memUser.email, name: memUser.name }, JWT_SECRET, { expiresIn: '30d' });
+    return res.json({
+      token,
+      user: {
+        id: memUser.id,
+        name: memUser.name,
+        email: memUser.email,
+        picture: memUser.picture,
+        provider: memUser.provider || 'email'
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Google OAuth Sync (/api/auth/google)
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { name, email, picture, googleId } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Google email is required.' });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (dbConnected) {
+      try {
+        let user = await User.findOne({ email: normalizedEmail });
+        if (!user) {
+          user = await User.create({
+            name: name || email.split('@')[0],
+            email: normalizedEmail,
+            password: await bcrypt.hash('GOOGLE_OAUTH_USER_' + Date.now(), 10),
+            picture: picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(normalizedEmail)}`,
+            provider: 'google'
+          });
+        }
+        const token = jwt.sign({ id: user._id, email: user.email, name: user.name }, JWT_SECRET, { expiresIn: '30d' });
+        return res.json({
+          token,
+          user: {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            picture: user.picture,
+            provider: 'google'
+          }
+        });
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+
+    let memUser = memoryStore.users.find(u => u.email.toLowerCase() === normalizedEmail);
+    if (!memUser) {
+      memUser = {
+        id: googleId || 'gusr-' + Date.now(),
+        name: name || email.split('@')[0],
+        email: normalizedEmail,
+        picture: picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(normalizedEmail)}`,
+        provider: 'google'
+      };
+      memoryStore.users.push(memUser);
+    }
+    const token = jwt.sign({ id: memUser.id, email: memUser.email, name: memUser.name }, JWT_SECRET, { expiresIn: '30d' });
+    return res.json({
+      token,
+      user: {
+        id: memUser.id,
+        name: memUser.name,
+        email: memUser.email,
+        picture: memUser.picture,
+        provider: 'google'
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -283,9 +580,23 @@ app.get('/api/orders', async (req, res) => {
 app.post('/api/orders', async (req, res) => {
   try {
     const orderData = req.body;
+    const tracking_number = orderData.tracking_number || ('AV-TRK-' + Math.floor(100000 + Math.random() * 900000));
+    
+    // Delivery estimated 4 days from now
+    const delDate = new Date();
+    delDate.setDate(delDate.getDate() + 4);
+    const estimated_delivery = delDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+    const fullOrderPayload = {
+      ...orderData,
+      tracking_number,
+      estimated_delivery,
+      status: orderData.status || 'processing'
+    };
+
     if (dbConnected) {
       try {
-        const newOrder = await Order.create(orderData);
+        const newOrder = await Order.create(fullOrderPayload);
         return res.status(201).json(newOrder);
       } catch (err) {
         dbConnected = false;
@@ -294,12 +605,109 @@ app.post('/api/orders', async (req, res) => {
 
     const orderObj = {
       _id: 'ord-' + Date.now(),
-      ...orderData,
-      createdAt: new Date().toISOString(),
-      status: 'pending'
+      ...fullOrderPayload,
+      createdAt: new Date().toISOString()
     };
     memoryStore.orders.unshift(orderObj);
     res.status(201).json(orderObj);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Track Order by Order ID or Tracking Number or Phone/Email
+app.get('/api/orders/track/:query', async (req, res) => {
+  try {
+    const { query } = req.params;
+    if (!query) return res.status(400).json({ error: 'Order ID or tracking number required.' });
+
+    const cleanQuery = query.trim();
+
+    if (dbConnected) {
+      try {
+        const found = await Order.findOne({
+          $or: [
+            { _id: mongoose.isValidObjectId(cleanQuery) ? cleanQuery : null },
+            { tracking_number: cleanQuery.toUpperCase() },
+            { email: cleanQuery.toLowerCase() },
+            { phone: cleanQuery }
+          ]
+        });
+        if (found) return res.json(found);
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+
+    // Memory Store Search
+    const memFound = memoryStore.orders.find(o =>
+      (o._id && o._id.toString() === cleanQuery) ||
+      (o.id && o.id.toString() === cleanQuery) ||
+      (o.tracking_number && o.tracking_number.toUpperCase() === cleanQuery.toUpperCase()) ||
+      (o.email && o.email.toLowerCase() === cleanQuery.toLowerCase()) ||
+      (o.phone && o.phone === cleanQuery)
+    );
+
+    if (memFound) return res.json(memFound);
+
+    res.status(404).json({ error: 'Order not found. Please check your Order ID or Tracking Number.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get User Orders by Email
+app.get('/api/orders/user/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    if (!email) return res.status(400).json({ error: 'User email is required.' });
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (dbConnected) {
+      try {
+        const userOrders = await Order.find({ email: normalizedEmail }).sort({ createdAt: -1 });
+        return res.json(userOrders);
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+
+    const memUserOrders = memoryStore.orders.filter(o => o.email && o.email.toLowerCase() === normalizedEmail);
+    res.json(memUserOrders);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update Order Status (Admin)
+const VALID_STATUSES = ['pending', 'processing', 'quality_check', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
+app.patch('/api/orders/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status || !VALID_STATUSES.includes(status)) {
+      return res.status(400).json({ error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}` });
+    }
+
+    if (dbConnected) {
+      try {
+        const updated = await Order.findByIdAndUpdate(id, { status }, { new: true });
+        if (updated) return res.json(updated);
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+
+    // Memory store fallback
+    const idx = memoryStore.orders.findIndex(o => (o._id && o._id === id) || (o.id && o.id === id));
+    if (idx !== -1) {
+      memoryStore.orders[idx] = { ...memoryStore.orders[idx], status };
+      return res.json(memoryStore.orders[idx]);
+    }
+
+    res.status(404).json({ error: 'Order not found.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -382,8 +790,7 @@ app.get('/api/testimonials', async (req, res) => {
 });
 
 // Start Server
-initDBConnection().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 AnimeVerse Server running at http://localhost:${PORT}`);
-  });
+app.listen(PORT, () => {
+  console.log(`🚀 AnimeVerse Server running at http://localhost:${PORT}`);
+  initDBConnection();
 });
