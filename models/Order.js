@@ -14,14 +14,22 @@ const OrderSchema = new mongoose.Schema({
   phone: { type: String, required: true },
   shipping_address: { type: String, required: true },
   billing_address: { type: String, required: true },
-  payment_method: { type: String, default: 'UPI' },
+  payment_method: { type: String, default: 'Razorpay / UPI' },
+  razorpay_order_id: { type: String },
+  razorpay_payment_id: { type: String },
+  razorpay_signature: { type: String },
+  payment_status: { type: String, enum: ['PENDING', 'PAID', 'FAILED', 'CANCELLED', 'REFUNDED'], default: 'PENDING' },
   items: [OrderItemSchema],
   total_amount: { type: Number, required: true },
   discount_amount: { type: Number, default: 0 },
   coupon_code: { type: String },
   tracking_number: { type: String },
   estimated_delivery: { type: String },
-  status: { type: String, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'processing' }
+  status: { 
+    type: String, 
+    enum: ['pending_payment', 'payment_processing', 'paid', 'pending', 'processing', 'quality_check', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'payment_failed'], 
+    default: 'pending_payment' 
+  }
 }, { timestamps: true });
 
 if (mongoose.models && mongoose.models.Order) {
