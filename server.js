@@ -13,6 +13,7 @@ import Order from './models/Order.js';
 import Coupon from './models/Coupon.js';
 import SupportInfo from './models/SupportInfo.js';
 import WebsiteTestimonial from './models/WebsiteTestimonial.js';
+import ProductReview from './models/ProductReview.js';
 
 import crypto from 'crypto';
 
@@ -118,7 +119,22 @@ const memoryStore = {
     { id: 's-1', section_key: 'contact', title: 'Contact Information', content: 'Email: support@animeverse.com | Phone: +91 9685982012' },
     { id: 's-2', section_key: 'shipping', title: 'Shipping Policy', content: 'Free Express Shipping across India on orders above ₹999.' }
   ],
-  orders: []
+  orders: [],
+  reviews: [
+    {
+      id: 'rev-1',
+      _id: 'rev-1',
+      product_id: 'prod-1',
+      customer_name: 'Rahul Sharma',
+      author_name: 'Rahul Sharma',
+      rating: 5,
+      review_text: 'Top quality material and print. Looks epic in person!',
+      content: 'Top quality material and print. Looks epic in person!',
+      is_approved: true,
+      status: 'approved',
+      created_at: new Date().toISOString()
+    }
+  ]
 };
 
 // Ensure DB connection helper
@@ -1109,6 +1125,91 @@ app.get('/api/testimonials', async (req, res) => {
       }
     }
     res.json(memoryStore.testimonials);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Reviews Endpoints
+app.get('/api/reviews', async (req, res) => {
+  try {
+    const { product_id } = req.query;
+    if (dbConnected) {
+      try {
+        const query = product_id ? { product_id } : {};
+        const reviews = await ProductReview.find(query).sort({ createdAt: -1 });
+        return res.json(reviews);
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+    let list = memoryStore.reviews;
+    if (product_id) {
+      list = list.filter(r => r.product_id === product_id);
+    }
+    res.json(list);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/reviews', async (req, res) => {
+  try {
+    const { product_id, customer_name, author_name, rating, review_text, content } = req.body;
+    const author = customer_name || author_name || 'Verified Buyer';
+    const text = review_text || content || '';
+    const numRating = Number(rating) || 5;
+
+    if (!product_id) {
+      return res.status(400).json({ error: 'product_id is required' });
+    }
+
+    const payload = {
+      product_id,
+      author_name: author,
+      customer_name: author,
+      rating: numRating,
+      content: text,
+      review_text: text,
+      status: 'approved',
+      is_approved: true,
+    };
+
+    if (dbConnected) {
+      try {
+        const created = await ProductReview.create(payload);
+        return res.status(201).json(created);
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+
+    const newReview = {
+      id: 'rev-' + Date.now(),
+      _id: 'rev-' + Date.now(),
+      ...payload,
+      created_at: new Date().toISOString()
+    };
+    memoryStore.reviews.unshift(newReview);
+    res.status(201).json(newReview);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/reviews/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (dbConnected && mongoose.isValidObjectId(id)) {
+      try {
+        await ProductReview.findByIdAndDelete(id);
+        return res.json({ success: true });
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+    memoryStore.reviews = memoryStore.reviews.filter(r => r.id !== id && r._id !== id);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
