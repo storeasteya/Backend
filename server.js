@@ -62,13 +62,20 @@ const memoryStore = {
       _id: 'prod-1',
       id: 'prod-1',
       name: 'Goku Super Saiyan Aura Edition',
-      description: 'Premium heavyweight cotton apparel featuring high-density Goku aura print.',
+      description: 'Premium heavyweight 240 GSM ringspun cotton apparel with high-density Goku aura print.',
       price: 599,
-      image_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&auto=format&fit=crop&q=80',
+      image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80',
+      secondary_image_url: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80'
+      ],
       sizes: ['S', 'M', 'L', 'XL', 'XXL'],
       anime_series: 'Dragon Ball Z',
+      category: 'anime',
       featured: true,
-      in_stock: true
+      in_stock: true,
+      display_order: 1
     },
     {
       _id: 'prod-2',
@@ -77,34 +84,131 @@ const memoryStore = {
       description: 'Dark-mode aesthetic apparel displaying Sung Jinwoo shadow army extraction artwork.',
       price: 599,
       image_url: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&auto=format&fit=crop&q=80',
+      secondary_image_url: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&auto=format&fit=crop&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=800&auto=format&fit=crop&q=80'
+      ],
       sizes: ['M', 'L', 'XL', 'XXL'],
       anime_series: 'Solo Leveling',
+      category: 'anime',
       featured: true,
-      in_stock: true
+      in_stock: true,
+      display_order: 2
     },
     {
       _id: 'prod-3',
       id: 'prod-3',
       name: 'Akatsuki Red Cloud Oversized Edition',
-      description: 'Iconic Naruto Akatsuki red clouds embroidered on ultra-soft black cotton.',
+      description: 'Iconic Naruto Akatsuki red clouds embroidered on ultra-soft black heavyweight cotton.',
       price: 599,
-      image_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=800&auto=format&fit=crop&q=80',
+      image_url: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&auto=format&fit=crop&q=80',
+      secondary_image_url: 'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=800&auto=format&fit=crop&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=800&auto=format&fit=crop&q=80'
+      ],
       sizes: ['S', 'M', 'L', 'XL'],
       anime_series: 'Naruto',
+      category: 'anime',
       featured: true,
-      in_stock: true
+      in_stock: true,
+      display_order: 3
     },
     {
       _id: 'prod-4',
       id: 'prod-4',
       name: 'Gojo Infinite Void Graphic Edition',
-      description: 'Jujutsu Kaisen Gojo Satoru domain expansion glowing eyes design.',
+      description: 'Jujutsu Kaisen Gojo Satoru domain expansion glowing eye graphic design.',
       price: 599,
-      image_url: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800&auto=format&fit=crop&q=80',
+      image_url: 'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&auto=format&fit=crop&q=80',
+      secondary_image_url: 'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=800&auto=format&fit=crop&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1562157873-818bc0726f68?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1529374255404-311a2a4f1fd9?w=800&auto=format&fit=crop&q=80'
+      ],
       sizes: ['S', 'M', 'L', 'XL'],
       anime_series: 'Jujutsu Kaisen',
+      category: 'anime',
       featured: true,
-      in_stock: true
+      in_stock: true,
+      display_order: 4
+    },
+    {
+      _id: 'prod-5',
+      id: 'prod-5',
+      name: 'Mecha 01 - Knitted Evangelion Tee',
+      description: 'Neo Tokyo Evangelion Unit-01 purple & green mecha techwear silhouette tee.',
+      price: 599,
+      image_url: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80',
+      secondary_image_url: 'https://images.unsplash.com/photo-1503342394128-c104d54dba01?w=800&auto=format&fit=crop&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1503342394128-c104d54dba01?w=800&auto=format&fit=crop&q=80'
+      ],
+      sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      anime_series: 'Evangelion',
+      category: 'anime',
+      featured: true,
+      in_stock: true,
+      display_order: 5
+    },
+    {
+      _id: 'prod-6',
+      id: 'prod-6',
+      name: 'The Disgraced One - Gachiakuta Oversized Tee',
+      description: 'Dark fantasy demon extraction heavyweight drop-shoulder streetwear tee.',
+      price: 599,
+      image_url: 'https://images.unsplash.com/photo-1622445268480-498c8e945c2f?w=800&auto=format&fit=crop&q=80',
+      secondary_image_url: 'https://images.unsplash.com/photo-1622445268463-54876b5cf4cb?w=800&auto=format&fit=crop&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1622445268480-498c8e945c2f?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1622445268463-54876b5cf4cb?w=800&auto=format&fit=crop&q=80'
+      ],
+      sizes: ['M', 'L', 'XL'],
+      anime_series: 'Demon Slayer',
+      category: 'anime',
+      featured: true,
+      in_stock: true,
+      display_order: 6
+    },
+    {
+      _id: 'prod-7',
+      id: 'prod-7',
+      name: 'Passione Golden Wind Streetwear Edition',
+      description: 'JoJo Golden Wind Italian mafia inspired high-fashion drop shirt.',
+      price: 599,
+      image_url: 'https://images.unsplash.com/photo-1503342452485-86b7f54527ef?w=800&auto=format&fit=crop&q=80',
+      secondary_image_url: 'https://images.unsplash.com/photo-1503341793542-f8c5b0bfbf5f?w=800&auto=format&fit=crop&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1503342452485-86b7f54527ef?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1503341793542-f8c5b0bfbf5f?w=800&auto=format&fit=crop&q=80'
+      ],
+      sizes: ['S', 'M', 'L', 'XL'],
+      anime_series: 'JoJo',
+      category: 'anime',
+      featured: true,
+      in_stock: true,
+      display_order: 7
+    },
+    {
+      _id: 'prod-8',
+      id: 'prod-8',
+      name: 'Mecha 02 - Berserk Eva Heavyweight',
+      description: 'Red flame tactical oversized fit with bio-washed combed cotton durability.',
+      price: 599,
+      image_url: 'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=800&auto=format&fit=crop&q=80',
+      secondary_image_url: 'https://images.unsplash.com/photo-1583744946571-700bb11eb5a7?w=800&auto=format&fit=crop&q=80',
+      images: [
+        'https://images.unsplash.com/photo-1583744946564-b52ac1c389c8?w=800&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1583744946571-700bb11eb5a7?w=800&auto=format&fit=crop&q=80'
+      ],
+      sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+      anime_series: 'Berserk',
+      category: 'anime',
+      featured: true,
+      in_stock: true,
+      display_order: 8
     }
   ],
   coupons: [
@@ -155,6 +259,13 @@ async function initDBConnection() {
     console.log('No MONGODB_URI provided in environment. Running with server memory store.');
   }
 }
+
+// Ensure DB is connected before handling requests (needed on serverless,
+// where app.listen() never runs and each cold start needs a fresh connection).
+app.use(async (req, res, next) => {
+  if (!dbConnected && process.env.MONGODB_URI) await initDBConnection();
+  next();
+});
 
 // ---------------- API ROUTES ---------------- //
 
@@ -524,19 +635,30 @@ app.get('/api/products', async (req, res) => {
 // POST /api/products (Add new product)
 app.post('/api/products', async (req, res) => {
   try {
-    const { name, description, price, image_url, sizes, anime_series, featured, in_stock } = req.body;
+    const { name, description, price, cross_price, original_price, image_url, secondary_image_url, images, sizes, anime_series, featured, in_stock, category } = req.body;
     
     if (!name || !price || !image_url) {
       return res.status(400).json({ error: 'Product name, price, and image_url are required.' });
     }
 
+    const imagesList = Array.isArray(images) && images.length > 0 
+      ? images.filter(u => u && typeof u === 'string' && u.trim()) 
+      : [image_url, secondary_image_url].filter(u => u && typeof u === 'string' && u.trim());
+
+    const parsedCrossPrice = cross_price ? parseFloat(cross_price) : (original_price ? parseFloat(original_price) : 0);
+
     const newProductData = {
       name,
       description: description || 'Premium Anime T-Shirt',
       price: parseFloat(price),
-      image_url,
+      cross_price: parsedCrossPrice,
+      original_price: parsedCrossPrice,
+      image_url: image_url.trim(),
+      secondary_image_url: (secondary_image_url || imagesList[1] || '').trim(),
+      images: imagesList.length > 0 ? imagesList : [image_url.trim()],
       sizes: Array.isArray(sizes) ? sizes : (sizes ? [sizes] : ['S', 'M', 'L', 'XL', 'XXL']),
       anime_series: anime_series || 'Anime Collection',
+      category: category || 'anime',
       featured: Boolean(featured),
       in_stock: in_stock !== undefined ? Boolean(in_stock) : true
     };
@@ -566,9 +688,25 @@ app.post('/api/products', async (req, res) => {
 app.put('/api/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    const body = req.body;
+    
+    if (body.image_url || body.secondary_image_url) {
+      const img1 = body.image_url || '';
+      const img2 = body.secondary_image_url || (Array.isArray(body.images) && body.images[1]) || '';
+      const imgs = [img1, img2].filter(Boolean);
+      body.images = imgs.length > 0 ? imgs : [img1];
+      body.secondary_image_url = img2;
+    }
+
+    if (body.cross_price !== undefined || body.original_price !== undefined) {
+      const cp = body.cross_price !== undefined ? parseFloat(body.cross_price) : parseFloat(body.original_price);
+      body.cross_price = isNaN(cp) ? 0 : cp;
+      body.original_price = body.cross_price;
+    }
+
     if (dbConnected && mongoose.isValidObjectId(id)) {
       try {
-        const updated = await Product.findByIdAndUpdate(id, req.body, { new: true });
+        const updated = await Product.findByIdAndUpdate(id, body, { new: true });
         if (updated) return res.json(updated);
       } catch (err) {
         dbConnected = false;
@@ -577,7 +715,7 @@ app.put('/api/products/:id', async (req, res) => {
 
     const idx = memoryStore.products.findIndex(p => p.id === id || p._id === id);
     if (idx !== -1) {
-      memoryStore.products[idx] = { ...memoryStore.products[idx], ...req.body };
+      memoryStore.products[idx] = { ...memoryStore.products[idx], ...body };
       return res.json(memoryStore.products[idx]);
     }
     res.status(404).json({ error: 'Product not found' });
@@ -921,36 +1059,48 @@ app.get('/api/orders', async (req, res) => {
 app.post('/api/orders', async (req, res) => {
   try {
     const orderData = req.body;
+    const orderId = orderData._id || orderData.id || ('ord-' + Date.now());
     const tracking_number = orderData.tracking_number || ('AV-TRK-' + Math.floor(100000 + Math.random() * 900000));
     
     // Delivery estimated 4 days from now
     const delDate = new Date();
     delDate.setDate(delDate.getDate() + 4);
-    const estimated_delivery = delDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const estimated_delivery = orderData.estimated_delivery || delDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     const fullOrderPayload = {
       ...orderData,
+      _id: orderId,
+      id: orderId,
       tracking_number,
       estimated_delivery,
-      status: orderData.status || 'processing'
+      status: orderData.status || 'processing',
+      payment_status: orderData.payment_status || 'PAID',
+      createdAt: orderData.createdAt || orderData.created_at || new Date().toISOString()
     };
 
     if (dbConnected) {
       try {
-        const newOrder = await Order.create(fullOrderPayload);
-        return res.status(201).json(newOrder);
+        const existing = await Order.findById(orderId);
+        if (existing) {
+          const updated = await Order.findByIdAndUpdate(orderId, fullOrderPayload, { new: true });
+          return res.status(200).json(updated);
+        } else {
+          const newOrder = await Order.create(fullOrderPayload);
+          return res.status(201).json(newOrder);
+        }
       } catch (err) {
         dbConnected = false;
       }
     }
 
-    const orderObj = {
-      _id: 'ord-' + Date.now(),
-      ...fullOrderPayload,
-      createdAt: new Date().toISOString()
-    };
-    memoryStore.orders.unshift(orderObj);
-    res.status(201).json(orderObj);
+    const existingIdx = memoryStore.orders.findIndex(o => (o._id && o._id === orderId) || (o.id && o.id === orderId));
+    if (existingIdx !== -1) {
+      memoryStore.orders[existingIdx] = { ...memoryStore.orders[existingIdx], ...fullOrderPayload };
+      return res.status(200).json(memoryStore.orders[existingIdx]);
+    }
+
+    memoryStore.orders.unshift(fullOrderPayload);
+    res.status(201).json(fullOrderPayload);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1023,7 +1173,7 @@ app.get('/api/orders/user/:email', async (req, res) => {
 
 // Update Order Status (Admin)
 const VALID_STATUSES = ['pending', 'processing', 'quality_check', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
-app.patch('/api/orders/:id/status', async (req, res) => {
+const updateOrderStatusHandler = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -1049,6 +1199,30 @@ app.patch('/api/orders/:id/status', async (req, res) => {
     }
 
     res.status(404).json({ error: 'Order not found.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+app.patch('/api/orders/:id/status', updateOrderStatusHandler);
+app.put('/api/orders/:id/status', updateOrderStatusHandler);
+
+// Delete Order (Admin)
+app.delete('/api/orders/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (dbConnected && mongoose.isValidObjectId(id)) {
+      try {
+        await Order.findByIdAndDelete(id);
+      } catch (err) {
+        dbConnected = false;
+      }
+    }
+    const idx = memoryStore.orders.findIndex(o => (o._id && o._id === id) || (o.id && o.id === id));
+    if (idx !== -1) {
+      const deleted = memoryStore.orders.splice(idx, 1);
+      return res.json({ success: true, order: deleted[0] });
+    }
+    res.json({ success: true, id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1215,8 +1389,12 @@ app.delete('/api/reviews/:id', async (req, res) => {
   }
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`🚀 AnimeVerse Server running at http://localhost:${PORT}`);
-  initDBConnection();
-});
+// Start Server (Render / local). On Vercel the exported app is used as the handler.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 AnimeVerse Server running at http://localhost:${PORT}`);
+    initDBConnection();
+  });
+}
+
+export default app;
