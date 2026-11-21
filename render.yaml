@@ -1,0 +1,27 @@
+# Render Blueprint — deploy via Render Dashboard → New → Blueprint → select this repo.
+services:
+  - type: web
+    name: asteya-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: FRONTEND_ORIGIN
+        value: https://storeasteya.vercel.app
+      # Render generates a strong random secret automatically.
+      - key: JWT_SECRET
+        generateValue: true
+      # Values below are entered in the Render dashboard when you create the Blueprint.
+      - key: MONGODB_URI
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
